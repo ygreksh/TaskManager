@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaskManager
@@ -7,19 +8,36 @@ namespace TaskManager
     {
         static void Main(string[] args)
         {
-            Task[] tasks1 = new Task[3]
+            /*
+            Task[] tasks1 = new Task[]
             {
-                new Task(() => Console.WriteLine("First Task")),
-                new Task(() => Console.WriteLine("Second Task")),
-                new Task(() => Console.WriteLine("Third Task"))
+                new Task(() => Console.WriteLine("Task 1")),
+                new Task(() => Console.WriteLine("Task 2")),
+                new Task(() => Console.WriteLine("Task 3")),
+                new Task(() => Console.WriteLine("Task 4"))
             };
             foreach (var t in tasks1)
                 t.Start();
             Task.WaitAll(tasks1); // ожидаем завершения задач 
-     
+            */
+            TaskExecutor taskExecutor = new TaskExecutor();
+            taskExecutor.Start(3);
+            for (int i = 1; i <= 6; i++)
+            {
+                taskExecutor.Add(new Action(() =>
+                {
+                    //int count = i;
+                    Random random = new Random();
+                    Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} началась");
+                    Thread.Sleep(2000);
+                    Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} завершилась");
+                }));
+            }
+
+            //Task.WaitAll(taskExecutor.list);
             Console.WriteLine("Завершение метода Main");
  
-            Console.ReadLine();
+            Console.ReadKey();
         }
     }
 }

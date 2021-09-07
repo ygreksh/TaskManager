@@ -1,28 +1,40 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TaskManager
 {
     public class TaskExecutor : ITaskExecutor
     {
         public int Amount { get; }
+        private List<Task> list = new List<Task>();
         public void Start(int maxConcurrent)
         {
-            throw new NotImplementedException();
+            foreach (var task in list)
+            {
+                task.Start();
+            }
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            foreach (var task in list)
+            {
+                task.Wait();
+            }
         }
 
         public void Add(Action action)
         {
-            throw new NotImplementedException();
+            var newTask = new Task(action);
+            list.Add(newTask);
+            newTask.Start();
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            this.Stop();
+            list.Clear();
         }
     }
 }
