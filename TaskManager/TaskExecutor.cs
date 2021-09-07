@@ -8,80 +8,66 @@ namespace TaskManager
     public class TaskExecutor : ITaskExecutor
     {
         //public int Amount { get; }
-        private int maxCountThreads;
-        private int tasksNowCounter = 0;
-        
-        // Флаг занятости потока задачами true - выполняется задача, false - поток свободен.
-        private static bool threadIsRunning;
-        
-        private LinkedList<Task> tasks = new LinkedList<Task>();
+        private int maxThreads;
+        private int nowThreads = 0;
+        private bool isRunning;
+        public LinkedList<Task> tasks = new LinkedList<Task>();
 
-        public TaskExecutor(int maxCountThreads)
+        public void Start(int maxConcurrent)
         {
-            this.maxCountThreads = maxCountThreads;
-        }
-
-        public void Start()
-        {
-            ThreadPool.QueueUserWorkItem(_ =>
+            isRunning = true;
+            
+            maxThreads = maxConcurrent;
+            while (nowThreads < maxThreads)
             {
-                // Note that the current thread is now processing work items.
-                // This is necessary to enable inlining of tasks into this thread.
-                threadIsRunning = true;
-                try
+                if (tasks.Count > 0)
                 {
-                    // Process all available items in the queue.
-                    while (true)
+                    nowThreads++;
+                    Task task;
+                    task = tasks.First.Value;
+                    tasks.RemoveFirst();
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        Task item;
-                        lock (tasks)
+                        task.Start();
+                        /*                    
+                        while (true)
                         {
-                            if (tasks.Count == 0)
+                            if (task.Status == TaskStatus.RanToCompletion)
                             {
-                                --tasksNowCounter;
+                                nowThreads--;
                                 break;
                             }
-
-                            item = tasks.First.Value;
-                            tasks.RemoveFirst();
                         }
-
-                        // Execute the task we pulled out of the queue
-                        item.Wait();
-                    }
+                        */
+                    });
+                    nowThreads--;
                 }
-                // We're done processing items on the current thread
-                finally { threadIsRunning = false; }
-            }, null);
+                else
+                {
+                    isRunning = false;
+                    break;
+                }
+            }
         }
 
         public void Stop()
         {
-            foreach (var task in tasks)
-            {
-                task.Wait();
-            }
+            
         }
 
         public void Add(Action action)
         {
-            lock (tasks)
+            Task newTask = new Task(action);
+            tasks.AddLast(newTask);
+            if (!isRunning)
             {
-                var newTask = new Task(action);
-                tasks.AddLast(newTask);
-                //newTask.Start();
-                if (tasksNowCounter < maxCountThreads)
-                {
-                    ++tasksNowCounter;
-                    Start();
-                }
+                Start(maxThreads);
             }
         }
 
         public void Clear()
         {
-            this.Stop();
-            tasks.Clear();
+            
         }
     }
 }

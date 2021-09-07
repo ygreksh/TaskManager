@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,25 +23,27 @@ namespace TaskManager
                 t.Start();
             Task.WaitAll(tasks1); // ожидаем завершения задач 
             */
-            TaskExecutor taskExecutor = new TaskExecutor(3);
-            //taskExecutor.Start(3);
-            for (int i = 1; i <= 6; i++)
+            TaskExecutor taskExecutor = new TaskExecutor();
+            taskExecutor.Start(2);
+            for (int i = 1; i <= 10; i++)
             {
                 taskExecutor.Add(new Action(() =>
                 {
-                    //int count = i;
+                    int count = i;
                     Random random = new Random();
-                    Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} началась");
+                    Console.WriteLine($"Работа {count} в потоке {Thread.CurrentThread.GetHashCode()} началась");
                     Thread.Sleep(random.Next(0,2000));
-                    Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} завершилась");
+                    Console.WriteLine($"Работа {count} в потоке {Thread.CurrentThread.GetHashCode()} завершилась");
                     Thread.Sleep(random.Next(0,2000));
                 }));
             }
 
+            Task.WaitAll(taskExecutor.tasks.ToArray());
+
             //Task.WaitAll(taskExecutor.list);
             Console.WriteLine("Завершение метода Main");
  
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 }
