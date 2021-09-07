@@ -8,6 +8,8 @@ namespace TaskManager
     {
         static void Main(string[] args)
         {
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
             /*
             Task[] tasks1 = new Task[]
             {
@@ -20,8 +22,8 @@ namespace TaskManager
                 t.Start();
             Task.WaitAll(tasks1); // ожидаем завершения задач 
             */
-            TaskExecutor taskExecutor = new TaskExecutor();
-            taskExecutor.Start(3);
+            TaskExecutor taskExecutor = new TaskExecutor(3);
+            //taskExecutor.Start(3);
             for (int i = 1; i <= 6; i++)
             {
                 taskExecutor.Add(new Action(() =>
@@ -29,8 +31,9 @@ namespace TaskManager
                     //int count = i;
                     Random random = new Random();
                     Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} началась");
-                    Thread.Sleep(2000);
+                    Thread.Sleep(random.Next(0,2000));
                     Console.WriteLine($"Работа {Thread.CurrentThread.GetHashCode()} завершилась");
+                    Thread.Sleep(random.Next(0,2000));
                 }));
             }
 
